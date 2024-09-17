@@ -1,0 +1,147 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: ilorenzo <ilorenzo@student.42barcel>       +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/04/30 16:26:31 by ilorenzo          #+#    #+#              #
+#    Updated: 2024/05/12 15:22:20 by pde-masc         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+
+NAME = minishell
+CC = gcc
+CFLAGS = -g  -Wall -Wextra -Werror
+LIB_FLAGS = -lreadline -lncurses -lft -L$(READLINE_DIR) -L$(LIBFT_DIR)
+INCLUDES = -I./header
+
+HEADER =	./header/minishell.h\
+			./header/lexer.h\
+			./header/parser.h\
+			./header/builtins.h
+
+READLINE_URL = http://ftp.gnu.org/gnu/readline/readline-8.1.tar.gz
+READLINE_TAR = readline-8.1.tar.gz
+READLINE_DIR = ./readline-8.1
+READLINE = $(READLINE_DIR)/libreadline.a
+READLINE_HEADER = $(READLINE_DIR)
+LIBFT_DIR = ./libft
+LIBFT = $(LIBFT_DIR)/libft.a
+LIBFT_HEADER = $(LIBFT_DIR)/libft.h
+
+SRCS_DIR = srcs/
+OBJS_DIR = objs/
+
+SRCS_LS =	main.c\
+			minishell.c\
+			error.c\
+			environment/environment.c\
+			environment/shlvl.c\
+			environment/environment_utils.c\
+			lexer/lexer.c\
+			lexer/lexer_utils.c\
+			lexer/syntax.c\
+			lexer/tokens.c\
+			expansor/expansor.c\
+			expansor/expansor_utils.c\
+			expansor/paths.c\
+			parser/parsing.c\
+			parser/parsing_utils.c\
+			parser/path_utils.c\
+			lexer/quotes.c\
+			executor/execution_utils.c\
+			executor/execution.c\
+			executor/redirections.c\
+			executor/heredoc.c\
+			signals/signals.c\
+			builtins/builtins.c\
+			builtins/echo.c\
+			builtins/export_utils.c\
+			builtins/export.c\
+			builtins/pwd.c\
+			builtins/unset.c\
+			builtins/exit.c\
+			builtins/exit_utils.c\
+			builtins/cd_utils.c\
+			builtins/cd.c\
+			builtins/env.c
+		
+
+LEXER_PATH = srcs/lexer/
+ENVIRONMENT_PATH = srcs/environment/
+EXPANSOR_PATH = srcs/expansor/
+PARSER_PATH = srcs/parser/
+EXECUTOR_PATH = srcs/executor/
+BUILTINS_PATH = srcs/builtins/
+SIGNALS_PATH = srcs/signals/
+
+SRCS = $(addprefix $(SRCS_DIR), $(SRCS_LS))
+OBJS = $(addprefix $(OBJS_DIR),$(notdir $(SRCS_LS:.c=.o)))
+
+GRAY = \033[2;29m
+GREEN = \033[0;32m
+YELLOW = \033[0;33m
+NC = \033[0m
+
+
+all: $(NAME)
+
+#MINISHELL
+$(NAME): $(LIBFT) $(READLINE_DIR) $(OBJS_DIR) $(OBJS) $(HEADER) Makefile	
+	$(CC) $(CFLAGS) $(OBJS) $(LIB_FLAGS) $(INCLUDES) -o $@ $< 
+
+#OBJS
+$(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@ 
+$(OBJS_DIR)%.o: $(LEXER_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@ 
+$(OBJS_DIR)%.o: $(ENVIRONMENT_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@ 
+$(OBJS_DIR)%.o: $(EXPANSOR_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@
+$(OBJS_DIR)%.o: $(PARSER_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@ 
+$(OBJS_DIR)%.o: $(EXECUTOR_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@
+$(OBJS_DIR)%.o: $(SIGNALS_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@
+$(OBJS_DIR)%.o: $(BUILTINS_PATH)%.c $(HEADER) Makefile
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<  -o $@
+$(OBJS_DIR):
+	@mkdir $@
+
+#LIBFT
+$(LIBFT): $(LIBFT_HEADER)
+	@echo "$(YELLOW)Compiling Libft$(NC)"
+	@make -s -C $(LIBFT_DIR)
+	@echo "$(GREEN)Libft compiled succesfully$(NC)"
+
+#READLINE
+$(READLINE_DIR):
+	@echo "$(YELLOW)Downloading readline$(NC)"
+	@curl -O $(READLINE_URL)
+	@tar -xzvf $(READLINE_TAR)
+	@rm $(READLINE_TAR)
+	@echo "$(YELLOW)Configuring readline$(NC)"
+	@cd $(READLINE_DIR) && ./configure
+
+#CLEAN
+clean:
+	@make -s -C $(LIBFT_DIR) clean
+	@rm -rf $(OBJS_DIR)
+	@echo "$(GREEN)Objects removed$(NC)"
+fclean: clean
+#	@make -s -C $(READLINE_DIR) clean
+	@rm -f $(LIBFT)
+	@rm -f $(NAME)
+	@rm -rf $(READLINE_DIR)
+	@echo "$(GREEN)Objects and executables removed$(NC)"
+
+valg:
+	valgrind --leak-check=full --show-leak-kinds=all ./minishell
+
+re: fclean all
+
+.PHONY: all clean fclean re

@@ -14,7 +14,7 @@
 NAME = minishell
 CC = gcc
 CFLAGS = -g  -Wall -Wextra -Werror
-LIB_FLAGS = -lreadline -lncurses -lft -L$(READLINE_DIR) -L$(LIBFT_DIR)
+LIB_FLAGS = -L$(READLINE_DIR) -L$(LIBFT_DIR) -lreadline -lhistory -lncurses -lft
 INCLUDES = -I./header
 
 HEADER =	./header/minishell.h\
@@ -89,7 +89,7 @@ NC = \033[0m
 all: $(NAME)
 
 #MINISHELL
-$(NAME): $(LIBFT) $(READLINE_DIR) $(OBJS_DIR) $(OBJS) $(HEADER) Makefile	
+$(NAME): $(LIBFT) $(READLINE) $(OBJS_DIR) $(OBJS) $(HEADER) Makefile	
 	$(CC) $(CFLAGS) $(OBJS) $(LIB_FLAGS) $(INCLUDES) -o $@ $< 
 
 #OBJS
@@ -126,6 +126,10 @@ $(READLINE_DIR):
 	@rm $(READLINE_TAR)
 	@echo "$(YELLOW)Configuring readline$(NC)"
 	@cd $(READLINE_DIR) && ./configure
+
+$(READLINE): $(READLINE_DIR)
+	@echo "$(YELLOW)Compiling readline$(NC)"
+	@make -s -C $(READLINE_DIR) static
 
 #CLEAN
 clean:

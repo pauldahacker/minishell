@@ -4,7 +4,7 @@ The PDF of the original subject is attached.
 
 The goal is to build a simplified Unix shell written only in C that replicates shell features like parsing, piping, redirection, and built-in commands.
 
-#Build
+# Build
 
 ```
 git clone <repository-url>
@@ -12,7 +12,7 @@ cd minishell
 make
 ```
 
-#Use
+# Use
 
 ```
 ./minishell
